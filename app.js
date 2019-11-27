@@ -7,7 +7,7 @@ const feedRoutes = require('./routes/feed');
 const { MongoDBUsername, MongoDBPassword } = require('./config/config');
 const DATABASE_NAME = 'messages';
 const MONGODB_URI = 'mongodb+srv://' + MongoDBUsername + ':' + MongoDBPassword + '@cluster0-oehn6.mongodb.net/' + DATABASE_NAME +'?retryWrites=true&w=majority';
-
+//const MONGODB_URI = 'mongodb://localhost/offlinedatabase';
 const app = express();
 
 //app.use(bodyParser.urlencoded()); //x-www-form-urlencoded <form>
