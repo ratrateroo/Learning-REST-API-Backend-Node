@@ -5,7 +5,7 @@ const Post = require('../models/post');
 exports.getPosts = (req, res, next) => {
     Post.find()
     .then(posts => {
-        res.status(200).json({message: 'Fetched post succesfully.', posts: posts})
+        res.status(200).json({message: 'Fetched post successfully.', posts: posts})
     })
     .catch(err => {
         if(!err.statusCode) {
@@ -20,16 +20,23 @@ exports.createPost = (req, res, next) => {
     if (!errors.isEmpty()) {
         const error = new Error('Validation failed, entered data is incorrect.');
         error.statusCode = 422;
-        throw error;
-        
+        throw error;        
     }
+
+    if(!req.file) {
+        const error = new Error('No image provided.');
+        error.statusCode =  422;
+        throw error;
+    }
+
+    const imageUrl = req.file.path.replace("\\","/");
     const title = req.body.title;
     const content = req.body.content;
     // Create post in db
     const post = new Post({
         title: title,
         content:content,
-        imageUrl: 'images/duck.jpg',
+        imageUrl: imageUrl,
         creator: { name: 'Mark '}
     });
     post
