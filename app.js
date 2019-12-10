@@ -1,16 +1,26 @@
 const path = require('path');
+const fs = require('fs');
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
 
 const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
 
-const { MongoDBUsername, MongoDBPassword } = require('./config/config');
-const DATABASE_NAME = 'messages';
-const MONGODB_URI = 'mongodb+srv://' + MongoDBUsername + ':' + MongoDBPassword + '@cluster0-oehn6.mongodb.net/' + DATABASE_NAME +'?retryWrites=true&w=majority';
+require('dotenv').config();
+console.log(process.env);
+
+// const { MongoDBUsername, MongoDBPassword } = require('./config/config');
+//const DATABASE_NAME = 'messages';
+// const MONGODB_URI = 'mongodb+srv://' + MongoDBUsername + ':' + MongoDBPassword + '@cluster0-oehn6.mongodb.net/' + DATABASE_NAME +'?retryWrites=true&w=majority';
+const MONGODB_URI = 
+`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0-oehn6.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}?retryWrites=true&w=majority`;
+console.log(MONGODB_URI);
 //const MONGODB_URI = 'mongodb://localhost/offlinedatabase';
 const app = express();
 
@@ -32,7 +42,11 @@ const fileFilter = (req, file, cb) => {
     }
 }
 
+const accessLogStream = fs.createWriteStream(path.join(__dirname,'access.log'), { flags: 'a' });
 
+app.use(helmet());
+app.use(compression());
+app.use(morgan('combined', { stream: accessLogStream }));
 
 //app.use(bodyParser.urlencoded()); //x-www-form-urlencoded <form>
 app.use(bodyParser.json()); //application/json HEADER
@@ -60,10 +74,13 @@ app.use((error, req, res, next) => {
 
 mongoose.connect(MONGODB_URI)
     .then(result => {
-        const server = app.listen(8080);
+        //const server = app.listen(8080);
+        const server = app.listen(process.env.PORT || 8080);
         const io = require('./socket').init(server);
         io.on('connection', socket => {
             console.log('Client connected');
         });
+        console.log(server);
+        console.log(process.env.PORT);
     })
     .catch(err => console.log(err));
